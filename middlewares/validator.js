@@ -39,6 +39,7 @@ const passwordSchema = Joi.string()
     "string-pattern-base": PASSWORD_MESSAGE,
   });
 
+const emailCodeSchema = Joi.number().required();
 // const addressSchema = Joi.object({
 //   type: Joi.string().valid("shipping", "billing").required().messages({
 //     "any.only": "Address type must be either 'shipping' or 'billing'",
@@ -104,4 +105,29 @@ const logInSchema = Joi.object({
   password: passwordSchema,
 });
 
-export default { createGameSchema, updateGameschema, signUpSchema, logInSchema };
+const acceptCodeSchema = Joi.object({
+  email: emailSchema,
+  emailCode: emailCodeSchema,
+});
+
+const acceptForgotCodeSchema = Joi.object({
+  email: emailSchema,
+  emailCode: emailCodeSchema,
+  newPassword: passwordSchema,
+});
+
+const resetPasswordSchema = Joi.object({
+  oldPassword: passwordSchema,
+  newPassword: passwordSchema,
+  confirmPassword: passwordSchema,
+});
+
+export default {
+  createGameSchema,
+  updateGameschema,
+  signUpSchema,
+  logInSchema,
+  acceptCodeSchema,
+  acceptForgotCodeSchema,
+  resetPasswordSchema,
+};

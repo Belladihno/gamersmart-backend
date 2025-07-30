@@ -2,7 +2,7 @@ import Game from "../models/gameModel.js";
 import AppError from "../utils/appError.js";
 import APIFEATURES from "../utils/apiFeatures.js";
 import validator from "../middlewares/validator.js";
-import { uploadImage, deleteImage } from "../utils/imageUpload.js";
+import { uploadImage, deleteImage } from "../services/imageService.js";
 
 class GameController {
   // get all games with filtering, sorting , and pagination
@@ -39,51 +39,7 @@ class GameController {
       );
     }
   }
-// async getAllGames(req, res, next) {
-//   try {
-//     console.log('1. Starting getAllGames');
-//     const features = new APIFEATURES(Game.find(), req.query)
-//       .search()
-//       .filter()
-//       .sort()
-//       .limitFields()
-//       .paginate();
 
-//     const games = await features.query;
-//     console.log('2. Query executed, games found:', games.length);
-
-//     console.log('3. About to count documents');
-//     const count = await Game.countDocuments();
-//     console.log('4. Count retrieved:', count);
-
-//     if (!games || games.length === 0) {
-//       console.log('5. No games branch - should not reach here');
-//       return next(new AppError("No games found!", 404));
-//     }
-
-//     console.log('6. About to calculate pagination');
-//     const currentPage = parseInt(req.query.page, 10) || 1;
-//     console.log('7. Current page:', currentPage);
-    
-//     const totalPages = Math.ceil(count / features.query.limit || 10);
-//     console.log('8. Total pages:', totalPages);
-    
-//     console.log('9. About to send response');
-//     res.status(200).json({
-//       success: true,
-//       message: "Games fetched successfully",
-//       results: games.length,
-//       currentPage,
-//       totalPages,
-//       data: games,
-//     });
-//     console.log('10. Response sent');
-    
-//   } catch (error) {
-//     console.log('Error caught:', error);
-//     return next(new AppError(`Error fetching all games: ${error.message}`, 500));
-//   }
-// }
   // get single game by ID
   // route GET /api/games/:id
   //access public
@@ -106,6 +62,7 @@ class GameController {
       return next(new AppError(`Error fetching game: ${error.message}`, 500));
     }
   }
+
   // create new game
   // route POST /api/games
   // access private
@@ -137,7 +94,7 @@ class GameController {
         title: { $regex: new RegExp(`^${title}$`, "i") },
       });
       if (existingGame) {
-        return next(new AppError("Gamw with this title already exist!", 400));
+        return next(new AppError("Game with this title already exist!", 400));
       }
       const result = await uploadImage(req.file);
       const game = await Game.create({

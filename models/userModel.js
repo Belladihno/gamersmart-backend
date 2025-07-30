@@ -60,6 +60,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
     // address: [
     //   {
     //     type: {

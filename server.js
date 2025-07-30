@@ -5,7 +5,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 // import rateLimit from "express-rate-limit";
 import compression from "compression";
-import connectDB from "./database/db.js";
+import connectDB from "./config/db.js";
 import gameRoute from "./routers/gameRoute.js";
 import authRoute from "./routers/authRoute.js";
 import errorHandler from "./middlewares/errorHandler.js";
@@ -31,15 +31,6 @@ app.get("/test", (req, res) => {
 app.use("/api/games", gameRoute);
 app.use("/api/auth", authRoute);
 
-// app.get('/api/games', (req, res) => {
-//   console.log('Direct games route hit');
-//   res.json({ message: 'Games working without route file' });
-// });
-
-// app.get('/api/auth', (req, res) => {
-//   console.log('Direct auth route hit');  
-//   res.json({ message: 'Auth working without route file' });
-// });
 
 app.use((req, res, next) => {
   const error = new AppError(

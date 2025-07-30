@@ -38,19 +38,7 @@ const sendErrorDev = (err, res) => {
     stack: err.stack,
   });
 };
-// const sendErrorDev = (err, res) => {
-//   console.log('=== SENDING DEV ERROR RESPONSE ===');
-//   console.log('About to send error response with status:', err.statusCode);
-  
-//   res.status(err.statusCode).json({
-//     status: err.status,
-//     error: err,
-//     message: err.message,
-//     stack: err.stack,
-//   });
-  
-//   console.log('Error response sent successfully');
-// };
+
 // production error handler
 const sendErrorProd = (err, res) => {
   //for error we expect
@@ -98,26 +86,5 @@ const errorHandler = (err, req, res, next) => {
     sendErrorProd(error, res);
   }
 };
-// const errorHandler = (err, req, res, next) => {
-//   console.log('=== ERROR HANDLER CALLED ===');
-//   console.log('Error message:', err.message);
-//   console.log('Status code:', err.statusCode);
-//   console.log('NODE_ENV:', process.env.NODE_ENV);
-  
-//   err.statusCode = err.statusCode || 500;
-//   err.status = err.status || "error";
-
-//   if (process.env.NODE_ENV === "development") {
-//     console.log('Going to development error handler');
-//     sendErrorDev(err, res);
-//   } else if (process.env.NODE_ENV === "production") {
-//     console.log('Going to production error handler');
-//     // ... your existing production code
-//   } else {
-//     console.log('NODE_ENV is neither development nor production:', process.env.NODE_ENV);
-//     // Fallback to development
-//     sendErrorDev(err, res);
-//   }
-// };
 
 export default errorHandler;

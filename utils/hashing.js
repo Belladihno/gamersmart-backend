@@ -1,4 +1,5 @@
 import { hash, compare } from "bcryptjs";
+import { createHmac } from "crypto";
 
 const doHash = (value, saltvalue) => {
   const result = hash(value, saltvalue);
@@ -10,4 +11,9 @@ const doHashValidation = (value, saltvalue) => {
   return result;
 };
 
-export default { doHash, doHashValidation };
+const hmacProcess = (value, key) => {
+  const result = createHmac("sha256", key).update(value).digest("hex");
+  return result;
+};
+
+export default { doHash, doHashValidation, hmacProcess };

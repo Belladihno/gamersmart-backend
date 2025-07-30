@@ -11,12 +11,17 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
+const uploadSingle = multer({
   storage: storage,
   limits: {
     fileSize: 1024 * 1024 * 5, // 5MB limit
   },
   fileFilter: fileFilter,
-});
+}).single('image');
 
-export default upload;
+
+
+
+
+
+export default uploadSingle;

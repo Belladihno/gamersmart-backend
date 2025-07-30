@@ -1,4 +1,4 @@
-import cloudinary from "./cloudinary.js";
+import cloudinary from "../config/cloudinary.js";
 
 const uploadImage = async (file) => {
   const b64 = Buffer.from(file.buffer).toString("base64");

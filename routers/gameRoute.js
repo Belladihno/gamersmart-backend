@@ -1,6 +1,6 @@
 import express from "express";
 import GameController from "../controllers/gameController.js";
-import upload from "../middlewares/multer.js";
+import upload from "../middlewares/upload.js";
 
 const router = express.Router();
 
@@ -10,11 +10,11 @@ router.get("/", GameController.getAllGames);
 // GET /api/games/:id - Get a game by id
 router.get("/:id", GameController.getGameById);
 
-// POST /api/games - Create new game
-router.post("/", upload.single("image"), GameController.createGame);
+// POST /api/games - Create new game with single image
+router.post("/", upload, GameController.createGame);
 
 // PUT /api/games/:id - update game
-router.put("/:id", upload.single("image"), GameController.updateGame);
+router.put("/:id", upload, GameController.updateGame);
 
 // DELETE /api/games/:id - delete a game by id
 router.delete("/:id", GameController.deleteGame);
