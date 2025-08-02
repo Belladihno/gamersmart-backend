@@ -327,55 +327,6 @@ class AuthController {
       );
     }
   }
-
-  async resetPassword(req, res, next) {
-    try {
-      const { oldPassword, newPassword, confirmPassword } = req.body;
-      const { error } = validator.resetPasswordSchema.validate({
-        oldPassword,
-        newPassword,
-        confirmPassword,
-      });
-      if (error) {
-        return next(new AppError(error.details[0].message, 400));
-      }
-      const userId = req.user._id;
-      if (!userId) {
-        return next(new AppError("user not authenticated", 401));
-      }
-      if (!req.user.verified) {
-        return next(new AppError("user not verified", 400));
-      }
-      const existingUser = await User.findById(userId).select("+password");
-      
-      const isPassword = await hashing.doHashValidation(
-        oldPassword,
-        existingUser.password
-      );
-      if (!isPassword) {
-        return next(new AppError("Invalid credentials", 401));
-      }
-      
-      if (oldPassword === newPassword) {
-        return next(
-          new AppError("New password must be different from old password", 400)
-        );
-      }
-      if (newPassword !== confirmPassword) {
-        return next(new AppError("Password does not match", 400));
-      }
-      const hashedPassword = await hashing.doHash(newPassword, 12);
-      existingUser.password = hashedPassword;
-      existingUser.passwordChangedAt = new Date();
-      await existingUser.save();
-      return res.status(200).json({
-        success: true,
-        message: "Password updated successfully!. Please login again.",
-      });
-    } catch (error) {
-      return next(new AppError(`Reset password failed: ${error.message}`, 500));
-    }
-  }
 }
 
 export default new AuthController();

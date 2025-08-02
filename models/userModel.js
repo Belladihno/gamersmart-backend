@@ -82,17 +82,8 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
   }
 );
-
-userSchema.virtual("fullName").get(function () {
-  return `${this.firstname} ${this.lastname}`;
-});
-
-// userSchema.index({ email: 1 });
-// userSchema.index({ createdAt: -1 });
 
 const User = mongoose.model("User", userSchema);
 

@@ -75,6 +75,7 @@ class GameController {
         price,
         releaseDate,
         discount,
+        stock,
       } = req.body;
       if (!req.file) {
         return next(new AppError("Please upload an image", 400));
@@ -86,6 +87,7 @@ class GameController {
         releaseDate,
         price,
         discount,
+        stock,
       });
       if (error) {
         return next(new AppError(error.details[0].message, 400));
@@ -105,6 +107,7 @@ class GameController {
         price: parseFloat(price),
         discount: discount ? parseFloat(discount) : 0,
         image: result.secure_url,
+        stock,
       });
       res.status(201).json({
         success: true,

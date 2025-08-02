@@ -9,7 +9,6 @@ const gameSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: true,
     },
     shortDescription: {
       type: String,
@@ -24,7 +23,7 @@ const gameSchema = new mongoose.Schema(
       default: 0,
     },
     releaseDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     image: {
@@ -32,21 +31,32 @@ const gameSchema = new mongoose.Schema(
       trim: true,
       required: true,
     },
+    images: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    availability: {
+      type: String,
+      enum: ["available", "pre-order", "out-of-stock", "discontinued"],
+      default: "available",
+    },
     stock: {
       quantity: {
         type: Number,
         required: true,
-        min: 0,
+        min: [0, "Stock quantity cannot be negative"],
         default: 0,
       },
-      isAvailable: {
+      unlimited: {
         type: Boolean,
         default: true,
       },
-      preOrder: {
-        type: Boolean,
-        default: false,
-      },
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     reviews: {
       count: {
@@ -70,20 +80,10 @@ const gameSchema = new mongoose.Schema(
 
 gameSchema.virtual("discountPrice").get(function () {
   if (this.discount > 0) {
-    return this.price * (1 - this.discount / 100);
+    return Math.round(this.price * (1 - this.discount / 100) * 100) / 100;
   }
   return this.price;
 });
-
-// gameSchema.virtual("availabilityStatus").get(function () {
-//   if (this.stock.preOrder) return "pre_order";
-//   if (this.stock.quantity > 0) return "in_stock";
-//   return "out_of_stock";
-// });
-
-gameSchema.index({ price: 1 });
-gameSchema.index({ createdAt: -1 });
-gameSchema.index({ "reviews.averageRating": -1 });
 
 const Game = mongoose.model("Game", gameSchema);
 

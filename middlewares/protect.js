@@ -20,7 +20,9 @@ const verifyToken = async (token) => {
 };
 
 const validateUser = async (userId) => {
-  const currentUser = await User.findById(userId).select("+active");
+  const currentUser = await User.findById(userId).select(
+    "+active +passwordChangedAt"
+  );
 
   if (!currentUser) {
     throw new AppError(
@@ -45,6 +47,7 @@ const changedPasswordAfterToken = (user, tokenCreatedTime) => {
       user.passwordChangedAt.getTime() / 1000,
       10
     );
+
     return tokenCreatedTime < passwordChangeTime;
   }
   return false;

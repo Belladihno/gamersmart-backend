@@ -30,7 +30,5 @@ router.patch("/send-verification-code", AuthController.sendVerificationCode);
 // PATCH /api/auth/verify-verification-code
 router.patch("/verify-verification-code", AuthController.verifyVericationCode);
 
-// PATCH /api/auth/reset-password
-router.patch("/reset-password", AuthController.resetPassword);
 
 export default router;

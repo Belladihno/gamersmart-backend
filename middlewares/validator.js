@@ -1,4 +1,5 @@
 import Joi from "joi";
+import mongoose from "mongoose";
 
 const firstNameSchema = Joi.string().required().trim().min(3).messages({
   "string-min": "firstname must contain at least 3 characters",
@@ -40,48 +41,34 @@ const passwordSchema = Joi.string()
   });
 
 const emailCodeSchema = Joi.number().required();
-// const addressSchema = Joi.object({
-//   type: Joi.string().valid("shipping", "billing").required().messages({
-//     "any.only": "Address type must be either 'shipping' or 'billing'",
-//     "any.required": "Address type is required",
-//   }),
-//   street: Joi.string().required().trim().min(5).messages({
-//     "string.min": "Street address must contain at least 5 characters",
-//     "any.required": "Street address is required",
-//   }),
-//   city: Joi.string().required().trim().min(2).messages({
-//     "string.min": "City must contain at least 2 characters",
-//     "any.required": "City is required",
-//   }),
-//   state: Joi.string().required().trim().min(2).max(50).messages({
-//     "string.min": "State must contain at least 2 characters",
-//     "string.max": "State must not exceed 50 characters",
-//     "any.required": "State is required",
-//   }),
-//   zipCode: Joi.string()
-//     .required()
-//     .trim()
-//     .pattern(/^[0-9]{5}(-[0-9]{4})?$/)
-//     .messages({
-//       "string.pattern.base": "Zip code must be in format 12345 or 12345-6789",
-//       "any.required": "Zip code is required",
-//     }),
-//   country: Joi.string()
-//     .trim()
-//     .default("US")
-//     .valid("US", "CA", "MX", "UK", "DE", "FR", "IT", "ES", "AU", "JP")
-//     .messages({
-//       "any.only": "Country must be a valid country code",
-//     }),
-// });
+
+const stockSchema = Joi.object({
+  quantity: Joi.number().min(0).max(100).required(),
+  unlimited: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+const objectId = () => {
+  return Joi.string()
+    .custom((value, helpers) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        return helpers.error("any.invalid");
+      }
+      return value;
+    }, "ObjectId validation")
+    .messages({
+      "any.invalid": "Must be a valid MongoDB ObjectId",
+    });
+};
 
 const createGameSchema = Joi.object({
   title: Joi.string().required().max(50),
-  description: Joi.string().required(),
+  description: Joi.string().optional(),
   shortDescription: Joi.string().required().max(100),
   price: Joi.number().required(),
   discount: Joi.number().min(0).max(100).optional(),
-  releaseDate: Joi.string().required(),
+  releaseDate: Joi.date().required(),
+  stock: stockSchema,
 });
 
 const updateGameschema = Joi.object({
@@ -100,6 +87,18 @@ const signUpSchema = Joi.object({
   password: passwordSchema,
 });
 
+const updateProfileSchema = Joi.object({
+  firstname: Joi.string().optional().trim().min(3).messages({
+    "string-min": "firstname must contain at least 3 characters",
+  }),
+  lastname: Joi.string().optional().trim().min(3).messages({
+    "string-min": "lastname must contain at least 3 characters",
+  }),
+  username: Joi.string().optional().trim().lowercase().min(3).messages({
+    "string-min": "name must contain at least 3 letters",
+  }),
+}).min(1);
+
 const logInSchema = Joi.object({
   email: emailSchema,
   password: passwordSchema,
@@ -116,10 +115,45 @@ const acceptForgotCodeSchema = Joi.object({
   newPassword: passwordSchema,
 });
 
-const resetPasswordSchema = Joi.object({
+const updatePasswordSchema = Joi.object({
   oldPassword: passwordSchema,
   newPassword: passwordSchema,
   confirmPassword: passwordSchema,
+});
+
+const addToCartSchema = Joi.object({
+  gameId: objectId().required().messages({
+    "any.required": "Game ID is required",
+    "any.invalid": "Game ID must be a valid MongoDB ObjectId",
+  }),
+  quantity: Joi.number().integer().min(1).max(1000).required().messages({
+    "number.base": "Quantity must be a number",
+    "number.integer": "Quantity must be an integer",
+    "number.min": "Quantity must be at least 1",
+    "number.max": "Quantity cannot exceed 1000",
+    "any.required": "Quantity is required",
+  }),
+});
+
+const updateCartSchema = Joi.object({
+  gameId: objectId().required().messages({
+    "any.required": "Game ID is required",
+    "any.invalid": "Game ID must be a valid MongoDB ObjectId",
+  }),
+  quantity: Joi.number().integer().min(1).max(1000).required().messages({
+    "number.base": "Quantity must be a number",
+    "number.integer": "Quantity must be an integer",
+    "number.min": "Quantity must be at least 1",
+    "number.max": "Quantity cannot exceed 1000",
+    "any.required": "Quantity is required",
+  }),
+});
+
+const removeItemSchema = Joi.object({
+  itemId: objectId().required().messages({
+    "any.required": "Item ID is required",
+    "any.invalid": "Item ID must be a valid MongoDB ObjectId",
+  }),
 });
 
 export default {
@@ -129,5 +163,9 @@ export default {
   logInSchema,
   acceptCodeSchema,
   acceptForgotCodeSchema,
-  resetPasswordSchema,
+  updatePasswordSchema,
+  updateProfileSchema,
+  addToCartSchema,
+  updateCartSchema,
+  removeItemSchema,
 };

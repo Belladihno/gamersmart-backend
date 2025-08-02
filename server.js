@@ -8,6 +8,8 @@ import compression from "compression";
 import connectDB from "./config/db.js";
 import gameRoute from "./routers/gameRoute.js";
 import authRoute from "./routers/authRoute.js";
+import userRoute from "./routers/userRoute.js";
+import cartRoute from './routers/cartRoute.js'
 import errorHandler from "./middlewares/errorHandler.js";
 import AppError from "./utils/appError.js";
 
@@ -30,7 +32,8 @@ app.get("/test", (req, res) => {
 
 app.use("/api/games", gameRoute);
 app.use("/api/auth", authRoute);
-
+app.use("/api/user", userRoute);
+app.use("/api/cart", cartRoute);
 
 app.use((req, res, next) => {
   const error = new AppError(
