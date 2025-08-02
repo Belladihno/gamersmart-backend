@@ -238,7 +238,7 @@ class CartController {
       await cart.save();
       return res.status(200).json({
         success: true,
-        message: "Cart cleard successfully",
+        message: "Cart cleared successfully",
         data: {
           cart: {
             ...cart.toObject(),
@@ -247,7 +247,7 @@ class CartController {
         },
       });
     } catch (error) {
-      return next(new AppError(`Delete cart failed: ${error.message}`, 500));
+      return next(new AppError(`Clear cart failed: ${error.message}`, 500));
     }
   }
 }
