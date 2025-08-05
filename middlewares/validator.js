@@ -62,7 +62,7 @@ const objectId = () => {
 };
 
 const createGameSchema = Joi.object({
-  title: Joi.string().required().max(50),
+  name: Joi.string().required().max(50),
   description: Joi.string().optional(),
   shortDescription: Joi.string().required().max(100),
   price: Joi.number().required(),
@@ -72,7 +72,7 @@ const createGameSchema = Joi.object({
 });
 
 const updateGameschema = Joi.object({
-  title: Joi.string().max(50),
+  name: Joi.string().max(50),
   description: Joi.string().min(100),
   shortDescription: Joi.string().max(100),
   price: Joi.number(),

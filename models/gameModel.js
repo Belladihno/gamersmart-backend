@@ -1,11 +1,17 @@
 import mongoose from "mongoose";
+import helper from "../utils/helpers.js";
 
 const gameSchema = new mongoose.Schema(
   {
-    title: {
+    name: {
       type: String,
-      required: [true, "Game title is required"],
+      required: [true, "Game name is required"],
       trim: true,
+    },
+    slug: {
+      type: String,
+      unique: true,
+      lowercase: true,
     },
     description: {
       type: String,
@@ -77,6 +83,16 @@ const gameSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+gameSchema.pre("save", async function (next) {
+  if (!this.isModified("name")) return next();
+
+  const baseSlug = helper.createSlug(this.name);
+
+  this.slug = await helper.generateUniqueSlug(baseSlug, this.constructor, this._id);
+
+  next();
+});
 
 gameSchema.virtual("discountPrice").get(function () {
   if (this.discount > 0) {

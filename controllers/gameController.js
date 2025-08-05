@@ -63,13 +63,34 @@ class GameController {
     }
   }
 
+  // get single game by slug
+  // route GET /api/games/slug/:slug
+  // access public
+
+  async getGameBySlug(req, res, next) {
+    try {
+      const { slug } = req.params;
+      const game = await Game.findOne({ slug });
+      if (!game) {
+        return next(new AppError("Game not found", 404));
+      }
+      res.status(200).json({
+        success: true,
+        message: "Game fetched successfully",
+        data: game,
+      });
+    } catch (error) {
+      return next(new AppError(`Error fetching game: ${error.message}`, 500));
+    }
+  }
+
   // create new game
   // route POST /api/games
   // access private
   async createGame(req, res, next) {
     try {
       const {
-        title,
+        name,
         description,
         shortDescription,
         price,
@@ -81,7 +102,7 @@ class GameController {
         return next(new AppError("Please upload an image", 400));
       }
       const { error } = validator.createGameSchema.validate({
-        title,
+        name,
         description,
         shortDescription,
         releaseDate,
@@ -93,14 +114,14 @@ class GameController {
         return next(new AppError(error.details[0].message, 400));
       }
       const existingGame = await Game.findOne({
-        title: { $regex: new RegExp(`^${title}$`, "i") },
+        name: { $regex: new RegExp(`^${name}$`, "i") },
       });
       if (existingGame) {
         return next(new AppError("Game with this title already exist!", 400));
       }
       const result = await uploadImage(req.file);
       const game = await Game.create({
-        title,
+        name,
         description,
         shortDescription,
         releaseDate,
@@ -132,8 +153,7 @@ class GameController {
         return next(new AppError("Game not found", 404));
       }
 
-      const { title, description, shortDescription, price, discount } =
-        req.body;
+      const { name, description, shortDescription, price, discount } = req.body;
 
       let imageUrl = existingGame.image;
       if (req.file) {
@@ -168,7 +188,7 @@ class GameController {
       }
 
       const { error } = validator.updateGameschema.validate({
-        title,
+        name,
         description,
         shortDescription,
         price,
@@ -181,7 +201,7 @@ class GameController {
       const game = await Game.findByIdAndUpdate(
         gameId,
         {
-          title,
+          name,
           description,
           shortDescription,
           price: parsedPrice,

@@ -29,7 +29,33 @@ const getCartWithItems = async (cartId) => {
   };
 };
 
+const createSlug = (text) =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+const generateUniqueSlug = async (baseSlug, Model, currentId = null) => {
+  let counter = 1;
+  let slug = baseSlug;
+
+  const buildQuery = (slugToCheck) =>
+    currentId
+      ? { slug: slugToCheck, _id: { $ne: currentId } }
+      : { slug: slugToCheck };
+
+  while (await Model.findOne(buildQuery(slug))) {
+    slug = `${baseSlug}-${counter++}`;
+  }
+
+  return slug;
+};
+
 export default {
   updateCartTotals,
   getCartWithItems,
+  createSlug,
+  generateUniqueSlug,
 };
