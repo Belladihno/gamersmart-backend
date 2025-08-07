@@ -65,20 +65,20 @@ const userSchema = new mongoose.Schema(
       default: true,
       select: false,
     },
-    // address: [
-    //   {
-    //     type: {
-    //       type: String,
-    //       enum: ["shipping", "billing"],
-    //       required: true,
-    //     },
-    //     street: { type: String, required: true },
-    //     city: { type: String, required: true },
-    //     state: { type: String, required: true },
-    //     zipCode: { type: String, required: true },
-    //     country: { type: String, required: true, default: "US" },
-    //   },
-    // ],
+    address: [
+      {
+        type: {
+          type: String,
+          enum: ["shipping", "billing"],
+          required: true,
+        },
+        street: { type: String, required: true },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        zipCode: { type: String, required: true },
+        country: { type: String, required: true, default: "NG" },
+      },
+    ],
   },
   {
     timestamps: true,

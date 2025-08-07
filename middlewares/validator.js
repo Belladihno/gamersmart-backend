@@ -99,6 +99,14 @@ const updateProfileSchema = Joi.object({
   }),
 }).min(1);
 
+const shippingAddressSchema = Joi.object({
+  street: Joi.string().required(),
+  city: Joi.string().required(),
+  state: Joi.string().required(),
+  zipCode: Joi.string().required(),
+  country: Joi.string().required(),
+});
+
 const logInSchema = Joi.object({
   email: emailSchema,
   password: passwordSchema,
@@ -156,6 +164,13 @@ const removeItemSchema = Joi.object({
   }),
 });
 
+const createOderSchema = Joi.object({
+  shippingAddress: shippingAddressSchema,
+  paymentMethod: Joi.string()
+    .required()
+    .valid("card", "paypal", "bank_transfer"),
+});
+
 export default {
   createGameSchema,
   updateGameschema,
@@ -168,4 +183,5 @@ export default {
   addToCartSchema,
   updateCartSchema,
   removeItemSchema,
+  createOderSchema,
 };
