@@ -11,6 +11,7 @@ import authRoute from "./routers/authRoute.js";
 import userRoute from "./routers/userRoute.js";
 import cartRoute from "./routers/cartRoute.js";
 import orderRoute from "./routers/orderRoute.js";
+import reviewRoute from "./routers/reviewRoute.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import AppError from "./utils/appError.js";
 
@@ -36,6 +37,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/order", orderRoute);
+app.use("/api/review", reviewRoute);
 
 app.use((req, res, next) => {
   const error = new AppError(

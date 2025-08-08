@@ -171,6 +171,16 @@ const createOderSchema = Joi.object({
     .valid("card", "paypal", "bank_transfer"),
 });
 
+const createReviewSchema = Joi.object({
+  content: Joi.string().required().max(1000),
+  rating: Joi.number().required().min(1).max(5),
+});
+
+const updateReviewSchema = Joi.object({
+  content: Joi.string().optional().max(1000),
+  rating: Joi.number().optional().min(1).max(5),
+});
+
 export default {
   createGameSchema,
   updateGameschema,
@@ -184,4 +194,6 @@ export default {
   updateCartSchema,
   removeItemSchema,
   createOderSchema,
+  createReviewSchema,
+  updateReviewSchema,
 };
