@@ -1,6 +1,6 @@
 import express from "express";
 import GameController from "../controllers/gameController.js";
-import upload from "../middlewares/upload.js";
+import upload from "../../src/middlewares/upload.js";
 
 const router = express.Router();
 

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import helper from "../utils/helpers.js";
 
+
 const gameSchema = new mongoose.Schema(
   {
     name: {
@@ -89,7 +90,11 @@ gameSchema.pre("save", async function (next) {
 
   const baseSlug = helper.createSlug(this.name);
 
-  this.slug = await helper.generateUniqueSlug(baseSlug, this.constructor, this._id);
+  this.slug = await helper.generateUniqueSlug(
+    baseSlug,
+    this.constructor,
+    this._id
+  );
 
   next();
 });
