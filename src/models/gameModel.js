@@ -1,13 +1,17 @@
 import mongoose from "mongoose";
 import helper from "../utils/helpers.js";
 
-
 const gameSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Game name is required"],
+      required: true,
       trim: true,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     slug: {
       type: String,

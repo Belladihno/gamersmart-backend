@@ -60,13 +60,22 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["card", "paypal", "bank_transfer"],
+      enum: ["card", "paypal", "bank_transfer", "flutterwave"],
       required: true,
+      default: "flutterwave",
     },
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],
       default: "pending",
+    },
+    paymentReference: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    paymentDate: {
+      type: Date,
     },
     isActive: {
       type: Boolean,
@@ -77,6 +86,8 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+
 
 const Order = mongoose.model("Order", orderSchema);
 

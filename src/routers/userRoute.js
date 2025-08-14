@@ -1,11 +1,11 @@
 import express from "express";
-import protect from "../middlewares/protect.js";
+import auth from "../middlewares/protect.js";
 import UserController from "../controllers/userController.js";
 
 
 const router = express.Router();
 
-router.use(protect);
+router.use(auth.protect);
 
 // GET /api/user/get-profile
 router.get("/get-profile", UserController.getProfile);

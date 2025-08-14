@@ -1,6 +1,8 @@
 import express from "express";
 import GameController from "../controllers/gameController.js";
 import upload from "../../src/middlewares/upload.js";
+import auth from "../middlewares/protect.js";
+import Game from "../models/gameModel.js";
 
 const router = express.Router();
 
@@ -14,12 +16,28 @@ router.get("/slug/:slug", GameController.getGameBySlug);
 router.get("/:id", GameController.getGameById);
 
 // POST /api/games - Create new game with single image
-router.post("/", upload, GameController.createGame);
+router.post(
+  "/",
+  upload,
+  auth.protect,
+  GameController.createGame
+);
 
 // PUT /api/games/:id - update game
-router.put("/:id", upload, GameController.updateGame);
+router.put(
+  "/:id",
+  upload,
+  auth.protect,
+  auth.checkOwnership(Game),
+  GameController.updateGame
+);
 
 // DELETE /api/games/:id - delete a game by id
-router.delete("/:id", GameController.deleteGame);
+router.delete(
+  "/:id",
+  auth.protect,
+  auth.checkOwnership(Game),
+  GameController.deleteGame
+);
 
 export default router;

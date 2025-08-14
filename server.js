@@ -12,6 +12,7 @@ import userRoute from "./src/routers/userRoute.js";
 import cartRoute from "./src/routers/cartRoute.js";
 import orderRoute from "./src/routers/orderRoute.js";
 import reviewRoute from "./src/routers/reviewRoute.js";
+import paymentRoute from "./src/routers/paymentRoute.js";
 import errorHandler from "./src/middlewares/errorHandler.js";
 import AppError from "./src/utils/appError.js";
 
@@ -38,6 +39,7 @@ app.use("/api/user", userRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/order", orderRoute);
 app.use("/api/review", reviewRoute);
+app.use("/api/payment", paymentRoute);
 
 app.use((req, res, next) => {
   const error = new AppError(

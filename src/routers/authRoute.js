@@ -1,6 +1,6 @@
 import express from "express";
 import AuthController from "../controllers/authController.js";
-import protect from "../../src/middlewares/protect.js";
+import auth from "../../src/middlewares/protect.js";
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.patch(
   AuthController.verifyForgotPasswordCode
 );
 
-router.use(protect);
+router.use(auth.protect);
 
 // POST /api/auth/logout - logout
 router.post("/logout", AuthController.logout);

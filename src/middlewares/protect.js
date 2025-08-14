@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { promisify } from "util";
 import AppError from "../utils/appError.js";
 import User from "../models/userModel.js";
+import catchAsync from "../utils/catchAsync.js";
 
 const extractToken = (req) => {
   let token;
@@ -53,36 +54,80 @@ const changedPasswordAfterToken = (user, tokenCreatedTime) => {
   return false;
 };
 
-const protect = async (req, res, next) => {
-  try {
-    const token = extractToken(req);
-    if (!token) {
-      return next(
-        new AppError("You are not logged in! Please log in to get access.", 401)
-      );
-    }
-
-    const decodedToken = await verifyToken(token);
-    const currentUser = await validateUser(decodedToken.id);
-
-    if (changedPasswordAfterToken(currentUser, decodedToken.iat)) {
-      return next(
-        new AppError("Password was recently changed. Please login again", 401)
-      );
-    }
-
-    req.user = currentUser;
-    req.token = token;
-    next();
-  } catch (error) {
-    console.error("Auth error:", error.message);
-
-    if (error instanceof AppError) {
-      return next(error);
-    }
-
-    return next(new AppError(`Authentication failed: ${error.message}`, 500));
+const protect = catchAsync(async (req, res, next) => {
+  const token = extractToken(req);
+  if (!token) {
+    return next(
+      new AppError("You are not logged in! Please log in to get access.", 401)
+    );
   }
+
+  const decodedToken = await verifyToken(token);
+  const currentUser = await validateUser(decodedToken.id);
+
+  if (changedPasswordAfterToken(currentUser, decodedToken.iat)) {
+    return next(
+      new AppError("Password was recently changed. Please login again", 401)
+    );
+  }
+
+  req.user = currentUser;
+  req.token = token;
+  next();
+});
+
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return next(
+        new AppError("You must be logged in to access this resource", 401)
+      );
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to perform this action", 403)
+      );
+    }
+    next();
+  };
 };
 
-export default protect;
+const adminOnly = (req, res, next) => {
+  if (!req.user) {
+    return next(
+      new AppError("You must be logged in to access this resource", 401)
+    );
+  }
+
+  if (req.user.role !== "admin") {
+    return next(new AppError("Access denied. Admin privileges required.", 403));
+  }
+
+  next();
+};
+
+const checkOwnership = (Model, resourceIdParam = "id") => {
+  return catchAsync(async (req, res, next) => {
+    const resourceId = req.params[resourceIdParam];
+    const resource = await Model.findById(resourceId);
+
+    if (!resource) {
+      return next(new AppError("Resource not found", 404));
+    }
+
+    if (
+      resource.user?.toString() !== req.user.id &&
+      req.user.role !== "admin"
+    ) {
+      return next(
+        new AppError("You do not have permission to access this resource", 403)
+      );
+    }
+
+    req.resource = resource;
+    next();
+  });
+};
+
+export default { protect, adminOnly, restrictTo, checkOwnership };

@@ -1,16 +1,13 @@
 import express from "express";
 import ReviewController from "../controllers/reviewController.js";
-import protect from "../../src/middlewares/protect.js";
+import auth from "../../src/middlewares/protect.js";
 
 const router = express.Router();
 
-router.use(protect);
+router.use(auth.protect);
 
 // GET /api/review/:id - Get all reviews
 router.get("/:id", ReviewController.getAllReviews);
-
-// // GET /api/review/:id - Get a review by id
-// router.get("/:id", ReviewController.getReviewById);
 
 // POST /api/review/:id - create a review
 router.post("/:id", ReviewController.createReview);

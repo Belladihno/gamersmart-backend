@@ -3,245 +3,216 @@ import AppError from "../utils/appError.js";
 import APIFEATURES from "../utils/apiFeatures.js";
 import validator from "../middlewares/validator.js";
 import { uploadImage, deleteImage } from "../services/imageService.js";
+import catchAsync from "../utils/catchAsync.js";
 
 class GameController {
   // get all games with filtering, sorting , and pagination
   // route GET /api/games
   // access public
-  async getAllGames(req, res, next) {
-    try {
-      const features = new APIFEATURES(Game.find(), req.query)
-        .search()
-        .filter()
-        .sort()
-        .limitFields()
-        .paginate();
+  getAllGames = catchAsync(async (req, res, next) => {
+    const features = new APIFEATURES(Game.find(), req.query)
+      .search()
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
-      const games = await features.query;
-      const count = await Game.countDocuments();
+    const games = await features.query;
 
-      if (!games || games.length === 0) {
-        return next(new AppError("No games found!", 404));
-      }
-      const currentPage = parseInt(req.query.page, 10) || 1;
-      const totalPages = Math.ceil(count / features.query.limit || 10);
-      res.status(200).json({
-        success: true,
-        message: "Games fetched successfully",
-        results: games.length,
-        currentPage,
-        totalPages,
-        data: games,
-      });
-    } catch (error) {
-      return next(
-        new AppError(`Error fetching all games: ${error.message}`, 500)
-      );
+    const countQuery = new APIFEATURES(Game.find(), req.query)
+      .search()
+      .filter();
+
+    const count = await countQuery.query.countDocuments();
+
+    if (!games || games.length === 0) {
+      return next(new AppError("No games found!", 404));
     }
-  }
+    const currentPage = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const totalPages = Math.ceil(count / limit);
+
+    res.status(200).json({
+      success: true,
+      message: "Games fetched successfully",
+      results: games.length,
+      currentPage,
+      totalPages,
+      data: games,
+    });
+  });
 
   // get single game by ID
   // route GET /api/games/:id
   //access public
-  async getGameById(req, res, next) {
-    try {
-      const gameId = req.params.id;
-      if (!gameId.match(/^[0-9a-fA-F]{24}$/)) {
-        return next(new AppError("Invalid gameId format", 400));
-      }
-      const game = await Game.findById(gameId);
-      if (!game) {
-        return next(new AppError("Game not found", 404));
-      }
-      res.status(200).json({
-        success: true,
-        message: "Game fetched successfully",
-        data: game,
-      });
-    } catch (error) {
-      return next(new AppError(`Error fetching game: ${error.message}`, 500));
+  getGameById = catchAsync(async (req, res, next) => {
+    const gameId = req.params.id;
+    if (!gameId.match(/^[0-9a-fA-F]{24}$/)) {
+      return next(new AppError("Invalid gameId format", 400));
     }
-  }
+    const game = await Game.findById(gameId);
+    if (!game) {
+      return next(new AppError("Game not found", 404));
+    }
+    res.status(200).json({
+      success: true,
+      message: "Game fetched successfully",
+      data: game,
+    });
+  });
 
   // get single game by slug
   // route GET /api/games/slug/:slug
   // access public
-
-  async getGameBySlug(req, res, next) {
-    try {
-      const { slug } = req.params;
-      const game = await Game.findOne({ slug });
-      if (!game) {
-        return next(new AppError("Game not found", 404));
-      }
-      res.status(200).json({
-        success: true,
-        message: "Game fetched successfully",
-        data: game,
-      });
-    } catch (error) {
-      return next(new AppError(`Error fetching game: ${error.message}`, 500));
+  getGameBySlug = catchAsync(async (req, res, next) => {
+    const { slug } = req.params;
+    const game = await Game.findOne({ slug });
+    if (!game) {
+      return next(new AppError("Game not found", 404));
     }
-  }
+    res.status(200).json({
+      success: true,
+      message: "Game fetched successfully",
+      data: game,
+    });
+  });
 
   // create new game
   // route POST /api/games
   // access private
-  async createGame(req, res, next) {
-    try {
-      const {
-        name,
-        description,
-        shortDescription,
-        price,
-        releaseDate,
-        discount,
-        stock,
-      } = req.body;
-      if (!req.file) {
-        return next(new AppError("Please upload an image", 400));
-      }
-      const { error } = validator.createGameSchema.validate({
-        name,
-        description,
-        shortDescription,
-        releaseDate,
-        price,
-        discount,
-        stock,
-      });
-      if (error) {
-        return next(new AppError(error.details[0].message, 400));
-      }
-      const existingGame = await Game.findOne({
-        name: { $regex: new RegExp(`^${name}$`, "i") },
-      });
-      if (existingGame) {
-        return next(new AppError("Game with this title already exist!", 400));
-      }
-      const result = await uploadImage(req.file);
-      const game = await Game.create({
-        name,
-        description,
-        shortDescription,
-        releaseDate,
-        price: parseFloat(price),
-        discount: discount ? parseFloat(discount) : 0,
-        image: result.secure_url,
-        stock,
-      });
-      res.status(201).json({
-        success: true,
-        message: "Game created successfully",
-        data: game,
-      });
-    } catch (error) {
-      return next(new AppError(`Error creating game: ${error.message}`, 500));
+  createGame = catchAsync(async (req, res, next) => {
+    const userId = req.user._id;
+    const {
+      name,
+      description,
+      shortDescription,
+      price,
+      releaseDate,
+      discount,
+      stock,
+    } = req.body;
+    if (!req.file) {
+      return next(new AppError("Please upload an image", 400));
     }
-  }
+    const { error } = validator.createGameSchema.validate({
+      name,
+      description,
+      shortDescription,
+      releaseDate,
+      price,
+      discount,
+      stock,
+    });
+    if (error) {
+      return next(new AppError(error.details[0].message, 400));
+    }
+    const existingGame = await Game.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
+    if (existingGame) {
+      return next(new AppError("Game with this title already exist!", 400));
+    }
+    const result = await uploadImage(req.file);
+    const game = await Game.create({
+      name,
+      description,
+      shortDescription,
+      releaseDate,
+      price: parseFloat(price),
+      discount: discount ? parseFloat(discount) : 0,
+      image: result.secure_url,
+      stock,
+      user: userId,
+    });
+    res.status(201).json({
+      success: true,
+      message: "Game created successfully",
+      data: game,
+    });
+  });
+
   // update  game
   // route PUT /api/games
   // access private
-  async updateGame(req, res, next) {
-    try {
-      const gameId = req.params.id;
-      if (!gameId.match(/^[0-9a-fA-F]{24}$/)) {
-        return next(new AppError("Invalid gameId format", 400));
-      }
-      const existingGame = await Game.findById(gameId);
-      if (!existingGame) {
-        return next(new AppError("Game not found", 404));
-      }
+  updateGame = catchAsync(async (req, res, next) => {
+    const existingGame = req.resource;
+    const { name, description, shortDescription, price, discount } = req.body;
 
-      const { name, description, shortDescription, price, discount } = req.body;
+    let imageUrl = existingGame.image;
+    if (req.file) {
+      await deleteImage(existingGame.image);
+      const result = await uploadImage(req.file);
+      imageUrl = result.secure_url;
+    }
 
-      let imageUrl = existingGame.image;
-      if (req.file) {
-        await deleteImage(existingGame.image);
-        const result = await uploadImage(req.file);
-        imageUrl = result.secure_url;
+    let parsedPrice;
+    if (price !== undefined && price !== null && price !== "") {
+      parsedPrice = parseFloat(price);
+      if (isNaN(parsedPrice)) {
+        return next(
+          new AppError("Invalid price format.Price must be a number.", 400)
+        );
       }
+    } else {
+      parsedPrice = existingGame.price;
+    }
 
-      let parsedPrice;
-      if (price !== undefined && price !== null && price !== "") {
-        parsedPrice = parseFloat(price);
-        if (isNaN(parsedPrice)) {
-          return next(
-            new AppError("Invalid price format.Price must be a number.", 400)
-          );
-        }
-      } else {
-        parsedPrice = existingGame.price;
+    let parsedDiscount = 0;
+    if (discount !== undefined && discount !== null && discount !== "") {
+      parsedDiscount = parseFloat(discount);
+      if (isNaN(parsedDiscount)) {
+        return next(
+          new AppError(
+            "Invalid discount format.DIscount must be a number.",
+            400
+          )
+        );
       }
+    }
 
-      let parsedDiscount = 0;
-      if (discount !== undefined && discount !== null && discount !== "") {
-        parsedDiscount = parseFloat(discount);
-        if (isNaN(parsedDiscount)) {
-          return next(
-            new AppError(
-              "Invalid discount format.DIscount must be a number.",
-              400
-            )
-          );
-        }
-      }
+    const { error } = validator.updateGameschema.validate({
+      name,
+      description,
+      shortDescription,
+      price,
+      discount,
+    });
+    if (error) {
+      return next(new AppError(error.details[0].message, 400));
+    }
 
-      const { error } = validator.updateGameschema.validate({
+    const game = await Game.findByIdAndUpdate(
+      existingGame._id,
+      {
         name,
         description,
         shortDescription,
-        price,
-        discount,
-      });
-      if (error) {
-        return next(new AppError(error.details[0].message, 400));
-      }
+        price: parsedPrice,
+        discount: parsedDiscount,
+        image: imageUrl,
+      },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json({
+      success: true,
+      message: "Game updated successfully",
+      data: game,
+    });
+  });
 
-      const game = await Game.findByIdAndUpdate(
-        gameId,
-        {
-          name,
-          description,
-          shortDescription,
-          price: parsedPrice,
-          discount: parsedDiscount,
-          image: imageUrl,
-        },
-        { new: true, runValidators: true }
-      );
-      res.status(200).json({
-        success: true,
-        message: "Game updated successfully",
-        data: game,
-      });
-    } catch (error) {
-      return next(new AppError(`Error updating game: ${error.message}`, 500));
-    }
-  }
   // delete  game
   // route DELETE /api/games
   // access private
-  async deleteGame(req, res, next) {
-    try {
-      const gameId = req.params.id;
-      if (!gameId.match(/^[0-9a-fA-F]{24}$/)) {
-        return next(new AppError("Invalid gameId format", 400));
-      }
-      const existingGame = await Game.findById(gameId);
-      if (!existingGame) {
-        return next(new AppError("Game not found", 404));
-      }
-      await deleteImage(existingGame.image);
-      await Game.findByIdAndDelete(gameId);
-      res.status(204).json({
-        success: true,
-        message: "game deleted successfully",
-      });
-    } catch (error) {
-      return next(new AppError(`Error deleting game: ${error.message}`, 500));
-    }
-  }
+  deleteGame = catchAsync(async (req, res, next) => {
+    const existingGame = req.resource;
+
+    await deleteImage(existingGame.image);
+    await Game.findByIdAndDelete(existingGame._id);
+    res.status(204).json({
+      success: true,
+      message: "game deleted successfully",
+    });
+  });
 }
 
 export default new GameController();

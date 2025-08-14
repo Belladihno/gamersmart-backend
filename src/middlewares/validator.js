@@ -129,7 +129,7 @@ const updatePasswordSchema = Joi.object({
   confirmPassword: passwordSchema,
 });
 
-const addToCartSchema = Joi.object({
+const addItemToCartSchema = Joi.object({
   gameId: objectId().required().messages({
     "any.required": "Game ID is required",
     "any.invalid": "Game ID must be a valid MongoDB ObjectId",
@@ -143,8 +143,8 @@ const addToCartSchema = Joi.object({
   }),
 });
 
-const updateCartSchema = Joi.object({
-  gameId: objectId().required().messages({
+const updateCartItemSchema = Joi.object({
+  itemId: objectId().required().messages({
     "any.required": "Game ID is required",
     "any.invalid": "Game ID must be a valid MongoDB ObjectId",
   }),
@@ -181,6 +181,13 @@ const updateReviewSchema = Joi.object({
   rating: Joi.number().optional().min(1).max(5),
 });
 
+const initializePaymentSchema = Joi.object({
+  orderId: objectId().required().messages({
+    "any.required": "Order ID is required",
+    "any.invalid": "Order ID must be a valid MongoDB ObjectId",
+  }),
+});
+
 export default {
   createGameSchema,
   updateGameschema,
@@ -190,10 +197,11 @@ export default {
   acceptForgotCodeSchema,
   updatePasswordSchema,
   updateProfileSchema,
-  addToCartSchema,
-  updateCartSchema,
+  addItemToCartSchema,
+  updateCartItemSchema,
   removeItemSchema,
   createOderSchema,
   createReviewSchema,
   updateReviewSchema,
+  initializePaymentSchema
 };

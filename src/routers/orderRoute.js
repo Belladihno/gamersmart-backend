@@ -1,10 +1,10 @@
 import express from "express";
 import OrderController from "../controllers/orderController.js";
-import protect from "../../src/middlewares/protect.js";
+import auth from "../../src/middlewares/protect.js";
 
 const router = express.Router();
 
-router.use(protect);
+router.use(auth.protect);
 
 // GET /api/order - Get all orders
 router.get("/", OrderController.getOrders);
