@@ -185,6 +185,21 @@ class PaymentController {
     }
     return res.status(200).send("OK");
   });
+
+  getPaymentHistory = catchAsync(async (req, res, next) => {
+    const userId = req.user._id;
+    const payments = await Payment.find({ user: userId })
+      .populate({
+        path: "order",
+        populate: { path: "items.game", select: "name image" },
+      })
+      .sort({ createdAt: -1 });
+    return res.status(200).json({
+      success: true,
+      message: "Payement history fetched",
+      data: payments,
+    });
+  });
 }
 
 export default new PaymentController();

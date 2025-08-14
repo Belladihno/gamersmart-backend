@@ -15,4 +15,7 @@ router.post("/initialize", PaymentController.initializePayement);
 // GET /api/payment/verify - Verify payment
 router.get("/callback", PaymentController.verifyPayment);
 
+// GET /api/payment/history - Payment history
+router.get("/history", PaymentController.getPaymentHistory);
+
 export default router;
