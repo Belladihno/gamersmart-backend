@@ -16,17 +16,8 @@ const hmacProcess = (value, key) => {
   return result;
 };
 
-const verifyWebhookSignature = (receivedSignature, payload, secretKey) => {
-  const expectedSignature = createHmac("sha256", secretKey)
-    .update(payload)
-    .digest("hex");
-
-  return expectedSignature === receivedSignature;
-};
-
 export default {
   doHash,
   doHashValidation,
   hmacProcess,
-  verifyWebhookSignature,
 };

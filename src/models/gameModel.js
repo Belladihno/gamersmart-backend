@@ -50,7 +50,7 @@ const gameSchema = new mongoose.Schema(
     ],
     availability: {
       type: String,
-      enum: ["available", "pre-order", "out-of-stock", "discontinued"],
+      enum: ["available", "pre-order", "out-of-stock"],
       default: "available",
     },
     stock: {
