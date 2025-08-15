@@ -13,6 +13,7 @@ import cartRoute from "./src/routers/cartRoute.js";
 import orderRoute from "./src/routers/orderRoute.js";
 import reviewRoute from "./src/routers/reviewRoute.js";
 import paymentRoute from "./src/routers/paymentRoute.js";
+import { swaggerDocument, swaggerUi } from './swagger.js';
 import errorHandler from "./src/middlewares/errorHandler.js";
 import AppError from "./src/utils/appError.js";
 
@@ -40,6 +41,7 @@ app.use("/api/cart", cartRoute);
 app.use("/api/order", orderRoute);
 app.use("/api/review", reviewRoute);
 app.use("/api/payment", paymentRoute);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use((req, res, next) => {
   const error = new AppError(

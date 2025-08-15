@@ -1,0 +1,1764 @@
+openapi: 3.0.3
+info:
+  title: Gamersmart API
+  description: E-commerce API for gaming products with user authentication, cart management, orders, payments, and reviews
+  version: 1.0.0
+  contact:
+    name: Gamersmart Support
+    email: support@gamersmart.com
+
+servers:
+  - url: http://localhost:5000/api
+    description: Development server
+  - url: https://api.gamersmart.com/api
+    description: Production server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        status:
+          type: string
+          enum: [fail, error]
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        verified:
+          type: boolean
+        phoneNumber:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Game:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: string
+        price:
+          type: number
+        discount:
+          type: number
+        discountPrice:
+          type: number
+        releaseDate:
+          type: string
+          format: date
+        image:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        availability:
+          type: string
+          enum: [available, pre-order, out-of-stock, discontinued]
+        stock:
+          type: object
+          properties:
+            quantity:
+              type: number
+            unlimited:
+              type: boolean
+        isActive:
+          type: boolean
+        reviews:
+          type: object
+          properties:
+            count:
+              type: number
+            averageRating:
+              type: number
+        user:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CartItem:
+      type: object
+      properties:
+        _id:
+          type: string
+        game:
+          $ref: '#/components/schemas/Game'
+        quantity:
+          type: number
+        price:
+          type: number
+        addedAt:
+          type: string
+          format: date-time
+
+    Cart:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        totalAmount:
+          type: number
+        totalItems:
+          type: number
+        status:
+          type: string
+          enum: [active, checkout, completed, abandoned]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Order:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        orderNumber:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              game:
+                type: string
+              name:
+                type: string
+              price:
+                type: number
+              quantity:
+                type: number
+              subtotal:
+                type: number
+        totalAmount:
+          type: number
+        totalItems:
+          type: number
+        status:
+          type: string
+          enum: [pending, processing, completed, cancelled]
+        paymentStatus:
+          type: string
+          enum: [pending, paid, failed]
+        paymentMethod:
+          type: string
+          enum: [card, paypal, bank_transfer, flutterwave]
+        shippingAddress:
+          type: object
+          properties:
+            street:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            zipCode:
+              type: string
+            country:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Payment:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        order:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        paymentReference:
+          type: string
+        transactionId:
+          type: string
+        status:
+          type: string
+          enum: [pending, successful, failed, cancelled]
+        gateway:
+          type: string
+        paidAt:
+          type: string
+          format: date-time
+
+    Review:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        game:
+          type: string
+        content:
+          type: string
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        isEdited:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            status: fail
+            message: Invalid input data
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            status: fail
+            message: You are not logged in! Please log in to get access.
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            status: fail
+            message: You do not have permission to perform this action
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            status: fail
+            message: Resource not found
+
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            status: fail
+            message: Resource already exists
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            status: error
+            message: Something went wrong
+
+paths:
+  # Payment Routes
+  /payment/initialize:
+    post:
+      tags:
+        - Payments
+      summary: Initialize payment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderId
+              properties:
+                orderId:
+                  type: string
+                  example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Payment initialized successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Payment initialized successfully
+                  data:
+                    type: object
+                    properties:
+                      paymentUrl:
+                        type: string
+                        example: https://checkout.flutterwave.com/v3/hosted/pay/...
+                      reference:
+                        type: string
+                        example: tx_1234567890_abc123
+                      paymentId:
+                        type: string
+                        example: 507f1f77bcf86cd799439011
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /payment/callback:
+    get:
+      tags:
+        - Payments
+      summary: Verify payment callback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: transaction_id
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "12345678"
+        - name: tx_ref
+          in: query
+          required: true
+          schema:
+            type: string
+          example: tx_1234567890_abc123
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: string
+          example: successful
+      responses:
+        '200':
+          description: Payment verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Payment verified successfully
+                  data:
+                    type: object
+                    properties:
+                      payment:
+                        $ref: '#/components/schemas/Payment'
+                      order:
+                        $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /payment/webhook:
+    post:
+      tags:
+        - Payments
+      summary: Handle payment webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                  example: charge.completed
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    tx_ref:
+                      type: string
+                    amount:
+                      type: number
+                    status:
+                      type: string
+      responses:
+        '200':
+          description: Webhook processed successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        '400':
+          description: Invalid signature
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Invalid signature
+
+  /payment/history:
+    get:
+      tags:
+        - Payments
+      summary: Get payment history
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Payment history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Payment history fetched
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+
+  # Review Routes
+  /review/{id}:
+    get:
+      tags:
+        - Reviews
+      summary: Get all reviews for a game
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Game ID
+          example: 507f1f77bcf86cd799439011
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Reviews retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Reviews fetched successfully
+                  results:
+                    type: number
+                    example: 3
+                  currentPage:
+                    type: number
+                    example: 1
+                  totalPages:
+                    type: number
+                    example: 1
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Reviews
+      summary: Create review for a game
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Game ID
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+                - rating
+              properties:
+                content:
+                  type: string
+                  maxLength: 1000
+                  example: Great game! Really enjoyed the gameplay and graphics.
+                rating:
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Review created successfully
+                  data:
+                    $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Reviews
+      summary: Update review
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Review ID
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  maxLength: 1000
+                  example: Updated review content...
+                rating:
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                  example: 4
+      responses:
+        '200':
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: review updated successfully
+                  data:
+                    $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Reviews
+      summary: Delete review
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Review ID
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '204':
+          description: Review deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: review deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+tags:
+  - name: System
+    description: System health and testing endpoints
+  - name: Authentication
+    description: User authentication and account verification
+  - name: User
+    description: User profile management and account settings
+  - name: Games
+    description: Game catalog management and browsing
+  - name: Cart
+    description: Shopping cart operations and item management
+  - name: Orders
+    description: Order creation, tracking and management
+  - name: Payments
+    description: Payment processing and transaction handling
+  - name: Reviews
+    description: Game reviews, ratings and user feedback
+                  message:
+                    type: string
+                    example: Server is working
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # Authentication Routes
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstname
+                - lastname
+                - username
+                - email
+                - password
+              properties:
+                firstname:
+                  type: string
+                  minLength: 3
+                  example: John
+                lastname:
+                  type: string
+                  minLength: 3
+                  example: Doe
+                username:
+                  type: string
+                  minLength: 3
+                  example: johndoe123
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+                  description: Must contain at least 8 characters, one uppercase, one lowercase, one number and one special character
+                  example: Password123!
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: sign up successful
+                  token:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  example: Password123!
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: login successful
+                  token:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: logout successful
+
+  /auth/send-verification-code:
+    patch:
+      tags:
+        - Authentication
+      summary: Send email verification code
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+      responses:
+        '200':
+          description: Verification code sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Code sent
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /auth/verify-verification-code:
+    patch:
+      tags:
+        - Authentication
+      summary: Verify email verification code
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - emailCode
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                emailCode:
+                  type: number
+                  example: 123456
+      responses:
+        '200':
+          description: Account verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Your account has been verified
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/send-forgot-password-code:
+    patch:
+      tags:
+        - Authentication
+      summary: Send forgot password code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+      responses:
+        '200':
+          description: Reset code sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Code sent
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /auth/verify-forgot-password-code:
+    patch:
+      tags:
+        - Authentication
+      summary: Reset password with verification code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - emailCode
+                - newPassword
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                emailCode:
+                  type: number
+                  example: 123456
+                newPassword:
+                  type: string
+                  example: NewPassword123!
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Password updated!
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # User Routes
+  /user/get-profile:
+    get:
+      tags:
+        - User
+      summary: Get user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Profile retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /user/update-profile:
+    put:
+      tags:
+        - User
+      summary: Update user profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstname:
+                  type: string
+                  minLength: 3
+                  example: Jane
+                lastname:
+                  type: string
+                  minLength: 3
+                  example: Smith
+                username:
+                  type: string
+                  minLength: 3
+                  example: janesmith456
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Profile updated successfully
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /user/update-password:
+    patch:
+      tags:
+        - User
+      summary: Update user password
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+                - confirmPassword
+              properties:
+                oldPassword:
+                  type: string
+                  example: OldPassword123!
+                newPassword:
+                  type: string
+                  example: NewPassword123!
+                confirmPassword:
+                  type: string
+                  example: NewPassword123!
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Password updated successfully! Please login again.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Games Routes
+  /games:
+    get:
+      tags:
+        - Games
+      summary: Get all games with filtering, sorting, and pagination
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sort
+          in: query
+          schema:
+            type: string
+            example: -createdAt,price
+          description: Sort fields (comma-separated, prefix with - for descending)
+        - name: fields
+          in: query
+          schema:
+            type: string
+            example: name,price,image
+          description: Select specific fields (comma-separated)
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search in title and description
+        - name: price[gte]
+          in: query
+          schema:
+            type: number
+          description: Minimum price filter
+        - name: price[lte]
+          in: query
+          schema:
+            type: number
+          description: Maximum price filter
+        - name: availability
+          in: query
+          schema:
+            type: string
+            enum: [available, pre-order, out-of-stock, discontinued]
+          description: Filter by availability
+      responses:
+        '200':
+          description: Games retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Games fetched successfully
+                  results:
+                    type: number
+                    example: 10
+                  currentPage:
+                    type: number
+                    example: 1
+                  totalPages:
+                    type: number
+                    example: 5
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Game'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Games
+      summary: Create new game (Admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - shortDescription
+                - price
+                - releaseDate
+                - stock
+                - image
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+                  example: Call of Duty Modern Warfare
+                description:
+                  type: string
+                  example: Detailed game description...
+                shortDescription:
+                  type: string
+                  maxLength: 100
+                  example: Epic first-person shooter game
+                price:
+                  type: number
+                  example: 59.99
+                discount:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  example: 10
+                releaseDate:
+                  type: string
+                  format: date
+                  example: '2024-12-25'
+                stock:
+                  type: string
+                  example: '{"quantity": 100, "unlimited": false}'
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Game created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Game created successfully
+                  data:
+                    $ref: '#/components/schemas/Game'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /games/{id}:
+    get:
+      tags:
+        - Games
+      summary: Get game by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Game retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Game fetched successfully
+                  data:
+                    $ref: '#/components/schemas/Game'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Games
+      summary: Update game (Owner/Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+                  example: Updated Game Name
+                description:
+                  type: string
+                  minLength: 100
+                  example: Updated detailed description...
+                shortDescription:
+                  type: string
+                  maxLength: 100
+                  example: Updated short description
+                price:
+                  type: number
+                  example: 49.99
+                discount:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  example: 15
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Game updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Game updated successfully
+                  data:
+                    $ref: '#/components/schemas/Game'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Games
+      summary: Delete game (Owner/Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '204':
+          description: Game deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: game deleted successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /games/slug/{slug}:
+    get:
+      tags:
+        - Games
+      summary: Get game by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: call-of-duty-modern-warfare
+      responses:
+        '200':
+          description: Game retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Game fetched successfully
+                  data:
+                    $ref: '#/components/schemas/Game'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Cart Routes
+  /cart:
+    get:
+      tags:
+        - Cart
+      summary: Get user cart
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Cart fetched successfully
+                  data:
+                    type: object
+                    properties:
+                      cart:
+                        $ref: '#/components/schemas/Cart'
+
+  /cart/add:
+    post:
+      tags:
+        - Cart
+      summary: Add item to cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - gameId
+                - quantity
+              properties:
+                gameId:
+                  type: string
+                  example: 507f1f77bcf86cd799439011
+                quantity:
+                  type: integer
+                  minimum: 1
+                  maximum: 1000
+                  default: 1
+                  example: 2
+      responses:
+        '200':
+          description: Item added to cart successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Item added to cart successfully
+                  data:
+                    $ref: '#/components/schemas/Cart'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cart/update/{id}:
+    put:
+      tags:
+        - Cart
+      summary: Update cart item quantity
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Cart item ID
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - quantity
+              properties:
+                quantity:
+                  type: integer
+                  minimum: 1
+                  maximum: 1000
+                  example: 3
+      responses:
+        '200':
+          description: Cart updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Cart updated successfully
+                  data:
+                    $ref: '#/components/schemas/Cart'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cart/remove/{id}:
+    delete:
+      tags:
+        - Cart
+      summary: Remove item from cart
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Cart item ID
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Item removed from cart successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Item removed from cart successfully
+                  data:
+                    type: object
+                    properties:
+                      cart:
+                        $ref: '#/components/schemas/Cart'
+                      deletedItem:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          gameId:
+                            type: string
+                          quantity:
+                            type: number
+                          price:
+                            type: number
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cart/clear:
+    delete:
+      tags:
+        - Cart
+      summary: Clear entire cart
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cart cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Cart cleared successfully
+                  data:
+                    type: object
+                    properties:
+                      cart:
+                        $ref: '#/components/schemas/Cart'
+
+  # Order Routes
+  /order:
+    get:
+      tags:
+        - Orders
+      summary: Get user orders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: sort
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, cancelled]
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Orders fetched successfully
+                  results:
+                    type: number
+                    example: 5
+                  currentPage:
+                    type: number
+                    example: 1
+                  totalPages:
+                    type: number
+                    example: 2
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Orders
+      summary: Create order from cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - shippingAddress
+                - paymentMethod
+              properties:
+                shippingAddress:
+                  type: object
+                  required:
+                    - street
+                    - city
+                    - state
+                    - zipCode
+                    - country
+                  properties:
+                    street:
+                      type: string
+                      example: 123 Main Street
+                    city:
+                      type: string
+                      example: Lagos
+                    state:
+                      type: string
+                      example: Lagos State
+                    zipCode:
+                      type: string
+                      example: "100001"
+                    country:
+                      type: string
+                      example: Nigeria
+                paymentMethod:
+                  type: string
+                  enum: [card, paypal, bank_transfer]
+                  example: card
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Order created successfully
+                  data:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /order/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Get single order
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Order retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                
