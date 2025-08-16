@@ -54,12 +54,8 @@ app.use(compression());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "success",
-    message: "Server is healthy",
-    timestamp: new Date().toISOString(),
-  });
+app.get("/", (req, res) => {
+  res.json({ message: "API is running!" });
 });
 
 app.get("/test", (req, res) => {
