@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-// import rateLimit from "express-rate-limit";
+import rateLimit from "express-rate-limit";
 import compression from "compression";
 import connectDB from "./src/config/db.js";
 import gameRoute from "./src/routers/gameRoute.js";
@@ -13,7 +13,7 @@ import cartRoute from "./src/routers/cartRoute.js";
 import orderRoute from "./src/routers/orderRoute.js";
 import reviewRoute from "./src/routers/reviewRoute.js";
 import paymentRoute from "./src/routers/paymentRoute.js";
-import { swaggerDocument, swaggerUi } from './swagger.js';
+import { swaggerDocument, swaggerUi } from "./swagger.js";
 import errorHandler from "./src/middlewares/errorHandler.js";
 import AppError from "./src/utils/appError.js";
 
@@ -22,12 +22,45 @@ const app = express();
 connectDB();
 
 app.use(helmet());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: process.env.WEBHOOK_FRONTEND_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  })
+);
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: {
+    error: "Too many requests, please try again later.",
+  },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 5,
+  message: {
+    error: "Too many attempts, please try again later.",
+  },
+});
+
+app.use(limiter);
+
 app.use(morgan("dev"));
 app.use(compression());
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Server is healthy",
+    timestamp: new Date().toISOString(),
+  });
+});
 
 app.get("/test", (req, res) => {
   console.log("Test route hit");
@@ -35,13 +68,14 @@ app.get("/test", (req, res) => {
 });
 
 app.use("/api/games", gameRoute);
+app.use("api/auth", authLimiter);
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/order", orderRoute);
 app.use("/api/review", reviewRoute);
 app.use("/api/payment", paymentRoute);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use((req, res, next) => {
   const error = new AppError(
