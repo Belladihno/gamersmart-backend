@@ -25,9 +25,17 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: process.env.WEBHOOK_FRONTEND_URL,
+    origin:
+      process.env.NODE_ENV === "production"
+        ? process.env.WEBHOOK_FRONTEND_URL
+        : [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://localhost:5173",
+          ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 const limiter = rateLimit({
@@ -48,23 +56,46 @@ const authLimiter = rateLimit({
 
 app.use(limiter);
 
-app.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+} else {
+  app.use(morgan("combined"));
+}
+
 app.use(compression());
 
 app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.get("/", (req, res) => {
-  res.json({ message: "API is running!" });
+  res.json({
+    message: "Gamersmart API is running!",
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+  });
+});
+
+app.get("/api/status", (req, res) => {
+  res.json({
+    status: "success",
+    message: "API is operational",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0",
+  });
 });
 
 app.get("/test", (req, res) => {
   console.log("Test route hit");
-  res.json({ message: "Server is working", timestamp: new Date() });
+  res.json({
+    message: "Server is working",
+    timestamp: new Date().toISOString(),
+    headers: req.headers,
+  });
 });
 
 app.use("/api/games", gameRoute);
-app.use("api/auth", authLimiter);
+app.use("/api/auth", authLimiter);
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
 app.use("/api/cart", cartRoute);
@@ -85,6 +116,22 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+});
+
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err, promise) => {
+  console.log('🔥 Unhandled Promise Rejection:', err.message);
+  // Close server & exit process
+  process.exit(1);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.log('🔥 Uncaught Exception:', err.message);
+  process.exit(1);
 });

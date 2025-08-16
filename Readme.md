@@ -5,6 +5,7 @@ A comprehensive gaming store backend API built with Node.js, Express, and MongoD
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js (v14 or higher)
 - MongoDB
 - Cloudinary account (for image uploads)
@@ -14,23 +15,27 @@ A comprehensive gaming store backend API built with Node.js, Express, and MongoD
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd gamersmart-api
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Setup**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 4. **Required Environment Variables**
+
    ```env
    # Database
    MONGO_URL=mongodb://localhost:27017/gamersmart
@@ -67,6 +72,7 @@ A comprehensive gaming store backend API built with Node.js, Express, and MongoD
    ```
 
 5. **Start the server**
+
    ```bash
    # Development
    npm run dev
@@ -79,7 +85,7 @@ A comprehensive gaming store backend API built with Node.js, Express, and MongoD
 
 - **Detailed Documentation**: [docs/API.md](docs/API.md)
 - **Swagger UI**: Import `swagger.yaml` into Swagger Editor
-- **Base URL**: `http://localhost:5000/api` (development)
+- **Base URL**: `https://gamersmart-api.onrender.com/api` (development)
 
 ## 🏗️ Project Structure
 
@@ -97,12 +103,14 @@ src/
 ## ✨ Key Features
 
 ### 🔐 Authentication & Authorization
+
 - JWT-based authentication
 - Role-based access control (User/Admin)
 - Email verification system
 - Password reset functionality
 
 ### 🎮 Game Management
+
 - CRUD operations with image upload
 - Advanced search and filtering
 - Slug-based URLs
@@ -110,31 +118,34 @@ src/
 - Discount pricing
 
 ### 🛒 Shopping Experience
+
 - Shopping cart management
 - Order processing
 - Payment integration (Flutterwave)
 - Order tracking
 
 ### ⭐ Community Features
+
 - Game reviews and ratings
 - User profiles
 - Review moderation
 
 ## 🔧 API Endpoints Overview
 
-| Module | Endpoints | Description |
-|--------|-----------|-------------|
-| Auth | `/api/auth/*` | Registration, login, verification |
-| Users | `/api/user/*` | Profile management |
-| Games | `/api/games/*` | Game catalog CRUD |
-| Cart | `/api/cart/*` | Shopping cart operations |
-| Orders | `/api/order/*` | Order management |
-| Payments | `/api/payment/*` | Payment processing |
-| Reviews | `/api/review/*` | Game reviews system |
+| Module   | Endpoints        | Description                       |
+| -------- | ---------------- | --------------------------------- |
+| Auth     | `/api/auth/*`    | Registration, login, verification |
+| Users    | `/api/user/*`    | Profile management                |
+| Games    | `/api/games/*`   | Game catalog CRUD                 |
+| Cart     | `/api/cart/*`    | Shopping cart operations          |
+| Orders   | `/api/order/*`   | Order management                  |
+| Payments | `/api/payment/*` | Payment processing                |
+| Reviews  | `/api/review/*`  | Game reviews system               |
 
 ## 🚦 Quick API Examples
 
 ### Authentication
+
 ```bash
 # Register
 curl -X POST http://localhost:5000/api/auth/signup \
@@ -148,6 +159,7 @@ curl -X POST http://localhost:5000/api/auth/login \
 ```
 
 ### Games
+
 ```bash
 # Get all games
 curl http://localhost:5000/api/games
@@ -178,6 +190,7 @@ npm test
 ## 🚀 Deployment
 
 ### Production Checklist
+
 - [ ] Set `NODE_ENV=production`
 - [ ] Configure secure database connection
 - [ ] Set up HTTPS
@@ -197,6 +210,7 @@ npm test
 ## 📞 Support
 
 For questions or support:
+
 - Create an issue in the repository
 - Email: abimbolaomisakin678@gmail.com
 
