@@ -31,6 +31,13 @@ const handleSyntaxError = () => {
 
 // development error handler
 const sendErrorDev = (err, res) => {
+  console.log("🐛 Development Error:", {
+    name: err.name,
+    message: err.message,
+    statusCode: err.statusCode,
+    stack: err.stack,
+  });
+
   res.status(err.statusCode).json({
     status: err.status,
     error: err,
@@ -41,6 +48,13 @@ const sendErrorDev = (err, res) => {
 
 // production error handler
 const sendErrorProd = (err, res) => {
+  console.log("🔥 Production Error:", {
+    name: err.name,
+    message: err.message,
+    statusCode: err.statusCode,
+    isOperational: err.isOperational,
+  });
+
   //for error we expect
   if (err.isOperational) {
     res.status(err.statusCode).json({
@@ -49,7 +63,7 @@ const sendErrorProd = (err, res) => {
     });
     // for unexpected errors
   } else {
-    console.error("ERROR", err);
+    console.error("❌ UNEXPECTED ERROR:", err);
     res.status(err.statusCode).json({
       status: err.status,
       message: "Something went wrong",
@@ -61,28 +75,37 @@ const errorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
+  console.log("🚨 Error Handler Called:", {
+    name: err.name,
+    message: err.message,
+    statusCode: err.statusCode,
+    environment: process.env.NODE_ENV,
+  });
+
   if (process.env.NODE_ENV === "development") {
     sendErrorDev(err, res);
-  } else if (process.env.NODE_ENV === "production") {
-    let error = { ...err };
-    error.message = err.message;
+  } else {
+    let error = Object.create(Object.getPrototypeOf(err));
+    Object.assign(error, err);
 
     if (err.name === "CastError") {
       error = handleCastErrorDB(error);
-      error.isOperational = true;
     }
+
     if (err.code === 11000) {
       error = handleDuplicateFieldsDB(error);
-      error.isOperational = true;
     }
+
     if (err.name === "ValidationError") {
       error = handleValidationErrorDB(error);
-      error.isOperational = true;
     }
-    if (error.name === "JsonWebTokenError") error = handleJWTError();
-    if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
+
+    if (err.name === "JsonWebTokenError") error = handleJWTError();
+
+    if (err.name === "TokenExpiredError") error = handleJWTExpiredError();
+
     if (err.name === "SyntaxError") error = handleSyntaxError();
-    
+
     sendErrorProd(error, res);
   }
 };

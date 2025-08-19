@@ -130,4 +130,13 @@ const checkOwnership = (Model, resourceIdParam = "id") => {
   });
 };
 
-export default { protect, adminOnly, restrictTo, checkOwnership };
+const isVerified = (req, res, next) => {
+  if (req.user.verified !== true) {
+    return next(
+      new AppError("You must be verified to access this resource", 401)
+    );
+  }
+  next();
+};
+
+export default { protect, adminOnly, restrictTo, checkOwnership, isVerified };

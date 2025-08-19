@@ -81,7 +81,7 @@ class OrderController {
       user: userId,
       status: "active",
     });
-
+    
     const cartItem = await CartItem.find({ cart: cart._id }).populate("game");
     if (!cartItem || cartItem.length === 0) {
       return next(new AppError("Cart is empty", 400));

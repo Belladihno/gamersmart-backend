@@ -4,7 +4,7 @@ import auth from "../../src/middlewares/protect.js";
 
 const router = express.Router();
 
-router.use(auth.protect);
+router.use(auth.protect, auth.isVerified);
 
 // GET /api/review/:id - Get all reviews
 router.get("/:id", ReviewController.getAllReviews);

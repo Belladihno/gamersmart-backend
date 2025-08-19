@@ -6,8 +6,7 @@ const router = express.Router();
 
 router.post("/webhook", PaymentController.handleWebhook);
 
-router.use(auth.protect);
-
+router.use(auth.protect, auth.isVerified);
 
 // POST /api/payment/initialize - Initialize payment
 router.post("/initialize", PaymentController.initializePayement);

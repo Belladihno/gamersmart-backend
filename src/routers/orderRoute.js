@@ -7,15 +7,15 @@ const router = express.Router();
 router.use(auth.protect);
 
 // GET /api/order - Get all orders
-router.get("/", OrderController.getOrders);
+router.get("/", auth.isVerified, OrderController.getOrders);
 
 // GET /api/order/:id - Get a order by id
-router.get("/:id", OrderController.getOrder);
+router.get("/:id", auth.isVerified, OrderController.getOrder);
 
 // POST /api/order - create an order
-router.post("/", OrderController.createOder);
+router.post("/", auth.isVerified, OrderController.createOder);
 
 //PUT /api/order/:id - cancel an order
-router.put("/:id", OrderController.cancelOrder);
+router.put("/:id", auth.isVerified, OrderController.cancelOrder);
 
 export default router;
