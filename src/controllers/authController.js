@@ -100,7 +100,7 @@ class AuthController {
       sameSite: "strict",
       path: "/",
     });
-    
+
     const userWithoutPassword = { ...existingUser.toObject() };
     delete userWithoutPassword.password;
 
@@ -151,7 +151,15 @@ class AuthController {
          <p>This code will expire in 5 minutes.</p>
          <p>If you didn't request this code, please ignore this email.</p>`,
     });
-    if (info.accepted[0] === existingUser.email) {
+
+    const isEmailSent =
+      info &&
+      ((info[0] && info[0].statusCode >= 200 && info[0].statusCode < 300) ||
+        (Array.isArray(info) && info.length > 0) ||
+        info.accepted ||
+        info.messageId);
+
+    if (isEmailSent) {
       const hashedEmailCode = hashing.hmacProcess(
         emailCode,
         process.env.HMAC_VERIFICATION_CODE_SECRET
@@ -233,7 +241,15 @@ class AuthController {
          <p>This code will expire in 5 minutes.</p>
          <p>If you didn't request this code, please ignore this email.</p>`,
     });
-    if (info.accepted[0] === existingUser.email) {
+
+    const isEmailSent =
+      info &&
+      ((info[0] && info[0].statusCode >= 200 && info[0].statusCode < 300) ||
+        (Array.isArray(info) && info.length > 0) ||
+        info.accepted ||
+        info.messageId);
+
+    if (isEmailSent) {
       const hashedEmailCode = hashing.hmacProcess(
         emailCode,
         process.env.HMAC_VERIFICATION_CODE_SECRET

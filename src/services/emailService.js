@@ -50,21 +50,29 @@ class EmailService {
       const result = await sgMail.send(emailMessage);
       console.log(
         "Email sent successfully via SendGrid:",
-        result[0].statusCode
+        result[0]?.statusCode || "Unknown status"
       );
 
-      return result;
-
+      return {
+        success: true,
+        statusCode: result[0]?.statusCode,
+        messageId: result[0]?.headers?.["x-message-id"],
+        accepted: [to],
+        result: result,
+      };
     } catch (error) {
       console.error(
         "SendGrid email error:",
         error.response?.body || error.message
       );
-      throw new Error(
-        error.response?.body?.errors?.[0]?.message ||
+      throw {
+        success: false,
+        error:
+          error.response?.body?.errors?.[0]?.message ||
           error.message ||
-          "Failed to send email"
-      );
+          "Failed to send email",
+        statusCode: error.code || 500,
+      };
     }
   }
 }
