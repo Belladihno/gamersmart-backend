@@ -1,6 +1,7 @@
 import express from "express";
 import ReviewController from "../controllers/reviewController.js";
 import auth from "../../src/middlewares/protect.js";
+import Review from "../models/reviewModel.js";
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.delete(
   "/:id",
   auth.protect,
   auth.isVerified,
-  auth.restrictTo("user", "admin"),
+  auth.checkOwnership(Review),
   ReviewController.deleteReview
 );
 

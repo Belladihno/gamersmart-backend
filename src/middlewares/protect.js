@@ -76,36 +76,36 @@ const protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-const restrictTo = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return next(
-        new AppError("You must be logged in to access this resource", 401)
-      );
-    }
+// const restrictTo = (...roles) => {
+//   return (req, res, next) => {
+//     if (!req.user) {
+//       return next(
+//         new AppError("You must be logged in to access this resource", 401)
+//       );
+//     }
 
-    if (!roles.includes(req.user.role)) {
-      return next(
-        new AppError("You do not have permission to perform this action", 403)
-      );
-    }
-    next();
-  };
-};
+//     if (!roles.includes(req.user.role)) {
+//       return next(
+//         new AppError("You do not have permission to perform this action", 403)
+//       );
+//     }
+//     next();
+//   };
+// };
 
-const adminOnly = (req, res, next) => {
-  if (!req.user) {
-    return next(
-      new AppError("You must be logged in to access this resource", 401)
-    );
-  }
+// const adminOnly = (req, res, next) => {
+//   if (!req.user) {
+//     return next(
+//       new AppError("You must be logged in to access this resource", 401)
+//     );
+//   }
 
-  if (req.user.role !== "admin") {
-    return next(new AppError("Access denied. Admin privileges required.", 403));
-  }
+//   if (req.user.role !== "admin") {
+//     return next(new AppError("Access denied. Admin privileges required.", 403));
+//   }
 
-  next();
-};
+//   next();
+// };
 
 const checkOwnership = (Model, resourceIdParam = "id") => {
   return catchAsync(async (req, res, next) => {
@@ -145,4 +145,4 @@ const isVerified = (req, res, next) => {
   next();
 };
 
-export default { protect, adminOnly, restrictTo, checkOwnership, isVerified };
+export default { protect, checkOwnership, isVerified };

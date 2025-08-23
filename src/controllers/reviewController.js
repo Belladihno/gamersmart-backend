@@ -146,16 +146,13 @@ class ReviewController {
   });
 
   deleteReview = catchAsync(async (req, res, next) => {
-    const userId = req.user._id;
     const reviewId = req.params.id;
     if (!reviewId.match(/^[0-9a-fA-F]{24}$/)) {
       return next(new AppError("Invalid review ID format", 400));
     }
 
-    const existingReview = await Review.findOne({
-      _id: reviewId,
-      user: userId,
-    });
+    const existingReview = req.resource;
+    
     if (!existingReview) {
       return next(new AppError("Review not found", 404));
     }
