@@ -10,8 +10,6 @@
 - [Utilities](#utilities)
 - [Security Features](#security-features)
 - [API Usage Examples](#api-usage-examples)
-- [Database Considerations](#database-considerations)
-- [Testing Guide](#testing-guide)
 
 ## Authentication
 
@@ -465,59 +463,5 @@ cp .env.example .env.test
 # Run development server
 npm run dev
 ```
-
-### Testing Tools Recommendations
-
-- **Postman**: For API testing with collections
-- **Thunder Client**: VS Code extension for API testing
-- **Jest**: For unit and integration tests (if implementing)
-- **MongoDB Compass**: For database inspection
-
-## Performance Optimization
-
-### Query Optimization
-
-- Use proper MongoDB indexes
-- Implement field selection to limit data transfer
-- Use pagination for large result sets
-- Cache frequently accessed data
-
-### Image Optimization
-
-- Cloudinary automatic optimization
-- Appropriate image formats and sizes
-- CDN delivery for fast loading
-
-### Connection Management
-
-- MongoDB connection pooling
-- Proper connection handling
-- Connection timeout configuration
-
-## Deployment Best Practices
-
-### Environment Configuration
-
-- Set `NODE_ENV=production`
-- Use environment-specific configuration
-- Secure database connections
-- Configure proper CORS origins
-
-### Security Configuration
-
-- Use HTTPS in production
-- Set secure cookie flags
-- Configure rate limiting
-- Input validation and sanitization
-- Regular security updates
-
-### Monitoring and Logging
-
-- Implement proper logging
-- Monitor API performance
-- Track error rates
-- Set up health checks
-
----
 
 This documentation provides comprehensive coverage of the Gamersmart API functionality, implementation details, and usage examples. For the interactive API specification, refer to the `swagger.yaml` file.

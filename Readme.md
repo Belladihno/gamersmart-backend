@@ -17,7 +17,7 @@ A comprehensive gaming store backend API built with Node.js, Express, and MongoD
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Belladihno/gamersmart-backend.git
    cd gamersmart-api
    ```
 
@@ -30,7 +30,7 @@ A comprehensive gaming store backend API built with Node.js, Express, and MongoD
 3. **Environment Setup**
 
    ```bash
-   cp .env.example .env
+   cp .env
    # Edit .env with your configuration
    ```
 
@@ -51,11 +51,10 @@ A comprehensive gaming store backend API built with Node.js, Express, and MongoD
    CLOUD_API_KEY=your-cloudinary-key
    CLOUD_API_SECRET=your-cloudinary-secret
 
-   # Gmail OAuth2
-   GMAIL_CLIENT_ID=your-gmail-client-id
-   GMAIL_CLIENT_SECRET=your-gmail-client-secret
-   GMAIL_REFRESH_TOKEN=your-gmail-refresh-token
-   GMAIL_USER_EMAIL=your-gmail-email
+   # Sendgrid
+   SENDGRID_API_KEY=your-sendgrid-api-key
+   SENDGRID_FROM_NAME=sender-name
+   SENDGRID_FROM_EMAIL =sender-email
 
    # HMAC Secrets
    HMAC_VERIFICATION_CODE_SECRET=your-verification-secret
@@ -66,7 +65,7 @@ A comprehensive gaming store backend API built with Node.js, Express, and MongoD
    FLUTTER_TEST_PUBLIC_KEY=your-flutterwave-public-key
    FLUTTER_TEST_ENCRYPTION_KEY=your-flutterwave-encryption-key
    FLW_WEBHOOK_SECRET_HASH=your-webhook-secret
-   WEBHOOK_FRONTEND_URL=http://localhost:3000
+   WEBHOOK_FRONTEND_URL=https://gamersmart-api.onrender.com
 
    NODE_ENV=development
    ```
@@ -176,16 +175,6 @@ curl "http://localhost:5000/api/games?search=zelda&price[gte]=50"
 - CORS protection
 - Rate limiting capabilities
 - Secure file upload handling
-
-## 🧪 Testing
-
-```bash
-# Run tests (if available)
-npm test
-
-# Manual testing with provided endpoints
-# See docs/API.md for detailed examples
-```
 
 ## 🚀 Deployment
 

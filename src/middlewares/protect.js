@@ -131,6 +131,12 @@ const checkOwnership = (Model, resourceIdParam = "id") => {
 };
 
 const isVerified = (req, res, next) => {
+  if (!req.user) {
+    return next(
+      new AppError("You must be logged in to access this resource", 401)
+    );
+  }
+
   if (req.user.verified !== true) {
     return next(
       new AppError("You must be verified to access this resource", 401)

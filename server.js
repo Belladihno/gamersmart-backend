@@ -95,7 +95,7 @@ app.get("/test", (req, res) => {
 });
 
 app.use("/api/games", gameRoute);
-// app.use("/api/auth", authLimiter);
+app.use("/api/auth", authLimiter);
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
 app.use("/api/cart", cartRoute);

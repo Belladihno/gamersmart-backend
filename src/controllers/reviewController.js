@@ -8,8 +8,19 @@ import catchAsync from "../utils/catchAsync.js";
 class ReviewController {
   getAllReviews = catchAsync(async (req, res, next) => {
     const gameId = req.params.id;
+    if (!gameId.match(/^[0-9a-fA-F]{24}$/)) {
+      return next(new AppError("Invalid game ID format", 400));
+    }
+
+    const game = await Game.findOne({ _id: gameId, isActive: true });
+    if (!game) {
+      return next(new AppError("Game not found", 404));
+    }
+
     const features = new APIFEATURES(
-      Review.find({ game: gameId }).populate("game", "name"),
+      Review.find({ game: gameId })
+        .populate("game", "name")
+        .populate("user", "name"),
       req.query
     )
       .filter()
@@ -18,7 +29,7 @@ class ReviewController {
       .paginate();
 
     const reviews = await features.query;
-    const count = await Game.countDocuments();
+    const count = await Review.countDocuments({ game: gameId });
 
     if (!reviews || reviews.length === 0) {
       return next(new AppError("No reviews found!", 404));
@@ -54,6 +65,11 @@ class ReviewController {
     const game = await Game.findOne({ _id: gameId, isActive: true });
     if (!game) {
       return next(new AppError("Game not found", 404));
+    }
+
+    const existingReview = await Review.findOne({ user: userId, game: gameId });
+    if (existingReview) {
+      return next(new AppError("You have already reviewed this game", 400));
     }
 
     const review = await Review.create({

@@ -133,15 +133,7 @@ class AuthController {
     if (existingUser.verified) {
       return next(new AppError("user already verified", 409));
     }
-    // const oneMinuteAgo = Date.now() - 1 * 60 * 1000;
-    // if (
-    //   existingUser.verificationCodeValidation &&
-    //   existingUser.verificationCodeValidation > oneMinuteAgo
-    // ) {
-    //   return next(
-    //     new AppError("Please wait before requesting another code", 429)
-    //   );
-    // }
+    
     const emailCode = crypto.randomInt(100000, 1000000).toString();
     let info = await emailService.sendEmail({
       to: email,
