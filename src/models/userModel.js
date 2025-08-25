@@ -56,6 +56,11 @@ const userSchema = new mongoose.Schema(
       select: false,
       default: null,
     },
+    tokenInvalidatedAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
     phoneNumber: {
       type: String,
       default: null,

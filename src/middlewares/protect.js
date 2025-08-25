@@ -22,7 +22,7 @@ const verifyToken = async (token) => {
 
 const validateUser = async (userId) => {
   const currentUser = await User.findById(userId).select(
-    "+active +passwordChangedAt"
+    "+active +passwordChangedAt +tokenInvalidatedAt"
   );
 
   if (!currentUser) {
@@ -54,6 +54,17 @@ const changedPasswordAfterToken = (user, tokenCreatedTime) => {
   return false;
 };
 
+const tokenInvalidatedAfterToken = (user, tokenCreatedTime) => {
+  if (user.tokenInvalidatedAt) {
+    const tokenInvalidatedTime = parseInt(
+      user.tokenInvalidatedAt.getTime() / 1000,
+      10
+    );
+    return tokenCreatedTime < tokenInvalidatedTime;
+  }
+  return false;
+};
+
 const protect = catchAsync(async (req, res, next) => {
   const token = extractToken(req);
   if (!token) {
@@ -68,6 +79,12 @@ const protect = catchAsync(async (req, res, next) => {
   if (changedPasswordAfterToken(currentUser, decodedToken.iat)) {
     return next(
       new AppError("Password was recently changed. Please login again", 401)
+    );
+  }
+
+  if (tokenInvalidatedAfterToken(currentUser, decodedToken.iat)) {
+    return next(
+      new AppError("Token has been invalidated. Please login again", 401)
     );
   }
 

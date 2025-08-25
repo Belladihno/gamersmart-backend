@@ -113,11 +113,16 @@ class AuthController {
   });
 
   logout = catchAsync(async (req, res, next) => {
+    const user = await User.findById(req.user.id);
+    user.tokenInvalidatedAt = new Date();
+    await user.save({ validateBeforeSave: false });
+
     res.clearCookie("Authorization", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
+
     return res.status(200).json({
       success: true,
       message: "logout successfull",
@@ -133,7 +138,7 @@ class AuthController {
     if (existingUser.verified) {
       return next(new AppError("user already verified", 409));
     }
-    
+
     const emailCode = crypto.randomInt(100000, 1000000).toString();
     let info = await emailService.sendEmail({
       to: email,
